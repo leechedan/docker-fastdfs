@@ -1,6 +1,6 @@
 FROM alpine:3.6
 
-MAINTAINER YoungCoding <bingdianfeishui@gmail.com>
+MAINTAINER YoungCoding <leechedan@gmail.com>
 
 ENV HOME /root
 ENV PCRE_VERSION 8.42
@@ -177,9 +177,9 @@ RUN     cd /etc/fdfs/ \
         && cp storage.conf.sample storage.conf \
         && cp tracker.conf.sample tracker.conf \
         && cp client.conf.sample client.conf \
-        && sed -i "s|/home/yuqing/fastdfs|/var/local/fdfs/tracker|g" /etc/fdfs/tracker.conf \
-        && sed -i "s|/home/yuqing/fastdfs|/var/local/fdfs/storage|g" /etc/fdfs/storage.conf \
-        && sed -i "s|/home/yuqing/fastdfs|/var/local/fdfs/storage|g" /etc/fdfs/client.conf 
+        && sed -i "s|/home/fastdfs|/var/local/fdfs/tracker|g" /etc/fdfs/tracker.conf \
+        && sed -i "s|/home/fastdfs|/var/local/fdfs/storage|g" /etc/fdfs/storage.conf \
+        && sed -i "s|/home/fastdfs|/var/local/fdfs/storage|g" /etc/fdfs/client.conf 
 
 # 获取nginx源码，与fastdfs插件一起编译
 #RUN     cd ${HOME} \
