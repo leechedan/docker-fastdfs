@@ -20,23 +20,22 @@ _ip_address() {
 	'
 }
 
-mkdir -p /var/local/fdfs/storage/data 
-mkdir -p /var/local/fdfs/tracker; 
-sed -i 's/listen .*$/listen '"$WEB_PORT"';/g' ${NGINX_CONFIG_FILE}; 
+# 配置启动脚本，在启动时中根据环境变量替换nginx端口、fastdfs端口
+# 默认nginx端口
+
+
 sed -i 's/http.server_port=.*$/http.server_port='"$WEB_PORT"'/g' /etc/fdfs/storage.conf;
-if [ "$IP" ]; then 
+if [ ! "$IP" ]; then 
     IP=$(_ip_address)
 fi 
-echo ".."
-if [ ! -f "${NGINX_CONFIG_FILE}" ]; then 
-    cp -fr ${NGINX_PREFIX}/conf-bak/* ${NGINX_PREFIX}/conf; 
-fi 
+mkdir -p /home/yuqing/fastdfs/
 sed -i 's/^tracker_server=.*$/tracker_server='"$IP"':'"$FDFS_PORT"'/g' /etc/fdfs/client.conf; 
 sed -i 's/^tracker_server=.*$/tracker_server='"$IP"':'"$FDFS_PORT"'/g' /etc/fdfs/storage.conf; 
+sed -i 's/^base_path=.*$/base_path=\/var\/local\/fdfs\/storage/g' /etc/fdfs/storage.conf; 
 sed -i 's/^tracker_server=.*$/tracker_server='"$IP"':'"$FDFS_PORT"'/g' /etc/fdfs/mod_fastdfs.conf;
-/usr/bin/fdfs_trackerd /etc/fdfs/tracker.conf start 
+
 /usr/bin/fdfs_storaged /etc/fdfs/storage.conf start 
-${NGINX_SBIN} -c /usr/local/nginx/conf/nginx.conf;
+${NGINX_SBIN} -c /usr/local/nginx/conf/nginx.conf
 
 
 exec "$@"

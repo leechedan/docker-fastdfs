@@ -1,28 +1,38 @@
-version: '2'
-networks:
-  default:
-    external:
-      name: bridge
+version: '3'
 services:
-    fastdfs:
-        build: .
-        image: fastdfs
+    fdfs-trackerd:
+        build: ./tracker
+        image: fdfs-trackerd
         # 该容器是否需要开机启动+自动重启。若需要，则取消注释。
         #restart: always
-        container_name: fastdfs
+        container_name: fdfs-trackerd
+        ports:
+            - 22122:22122
+        environment:
+            # docker所在主机的IP地址
+            - IP=192.168.1.1
+        volumes:
+            # 将本地目录映射到docker容器内的fastdfs数据存储目录，将fastdfs文件存储到主机上，以免每次重建docker容器，之前存储的文件就丢失了。
+            - /etc/locale.conf:/etc/locale.conf
+            - ./data/tracker:/var/local/fdfs/tracker
+        # 使docker具有root权限以读写主机上的目录
+        privileged: true
+    fdfs-storage:
+        build: ./storage
+        image: fdfs-storage
+        # 该容器是否需要开机启动+自动重启。若需要，则取消注释。
+        #restart: always
         ports:
             - 8088:8088
-            - 22122:22122
         environment:
             - NGINX_CONF_FILE=/etc/nginx/conf/nginx.conf
             # docker所在主机的IP地址
-            - IP=192.168.1.74
+            - IP=192.168.1.1
         volumes:
             # 将本地目录映射到docker容器内的fastdfs数据存储目录，将fastdfs文件存储到主机上，以免每次重建docker容器，之前存储的文件就丢失了。
-            - ./data/fdfs:/var/local/fdfs
-            - ./nginx/logs/:/usr/local/nginx/logs/
-            - ./nginx/conf:/usr/local/nginx/conf
+            - ./data/storage:/var/local/fdfs/storage
+            - ./data/nginx/conf:/usr/local/nginx/conf/
+            - /etc/locale.conf:/etc/locale.conf
+            - ./data/nginx/logs/:/usr/local/nginx/logs/
         # 使docker具有root权限以读写主机上的目录
         privileged: true
-        # 网络模式为host，即直接使用主机的网络接口
-        network_mode: "host"

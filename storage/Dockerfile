@@ -1,6 +1,6 @@
 FROM alpine:3.6
 
-MAINTAINER YoungCoding <leechedan@gmail.com>
+MAINTAINER leechedan <leechedan@gmail.com>
 
 ENV HOME /root
 ENV PCRE_VERSION 8.42
@@ -11,9 +11,9 @@ ENV NGINX_VERSION 1.13.12
 
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
 
-# 安装准备
-RUN    apk update \
-        && apk add --no-cache --virtual .build-deps bash gcc libc-dev make openssl-dev pcre-dev zlib-dev linux-headers curl gnupg libxslt-dev gd-dev geoip-dev  freetype libpng libjpeg-turbo freetype-dev libpng-dev libjpeg-turbo-dev  libtool g++ autoconf automake libgd \
+# 安装准备 --no-cache 
+RUN    apk update 
+RUN    apk add --virtual .build-deps bash gcc libc-dev make openssl-dev pcre-dev zlib-dev linux-headers curl gnupg libxslt-dev gd-dev geoip-dev  freetype libpng libjpeg-turbo freetype-dev libpng-dev libjpeg-turbo-dev  libtool g++ autoconf automake libgd \
         gnupg \
         libxslt-dev \
         gd-dev \
@@ -28,11 +28,11 @@ RUN     cd ${HOME} \
         && curl -fSL  https://codeload.github.com/happyfish100/fastdfs/tar.gz/V5.11 -o fastfs.tar.gz \
         && curl -fSL  https://github.com/happyfish100/fastdfs-nginx-module/archive/master.tar.gz -o fastdfs-nginx-module.tar.gz \
         && curl -fSL https://ftp.pcre.org/pub/pcre/pcre-$PCRE_VERSION.tar.gz -o pcre.tar.gz \
-	    && curl -fSL https://zlib.net/zlib-$ZLIB_VERSION.tar.gz -o zlib.tar.gz \
-	    && curl -fSL https://github.com/openssl/openssl/archive/OpenSSL_$OPENSSL_VERSION.tar.gz -o openssl.tar.gz \
-	    && curl -fSL https://github.com/grahamedgecombe/nginx-ct/archive/v$NGINX_CT_VERSION.tar.gz -o nginx-ct.tar.gz \
-	    && curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
-	    && curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc  -o nginx.tar.gz.asc \
+        && curl -fSL https://zlib.net/zlib-$ZLIB_VERSION.tar.gz -o zlib.tar.gz \
+        && curl -fSL https://github.com/openssl/openssl/archive/OpenSSL_$OPENSSL_VERSION.tar.gz -o openssl.tar.gz \
+        && curl -fSL https://github.com/grahamedgecombe/nginx-ct/archive/v$NGINX_CT_VERSION.tar.gz -o nginx-ct.tar.gz \
+        && curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
+        && curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc  -o nginx.tar.gz.asc \
         && git clone https://github.com/cloudflare/sslconfig.git \
         && git clone https://github.com/yaoweibin/ngx_http_substitutions_filter_module.git \
         && git clone https://github.com/cuber/ngx_http_google_filter_module.git \
@@ -99,7 +99,7 @@ ENV CONFIG "  --prefix=${NGINX_PREFIX} \
         --add-module=${HOME}/ngx_http_google_filter_module \
         --add-module=${HOME}/ngx_http_substitutions_filter_module \
     "
-#
+
 # 安装fastdfs v5.11
 RUN   GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \ 
     &&  cd ${HOME}/fastdfs-5.11/ \
@@ -134,10 +134,11 @@ RUN   GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
     && rm fastdfs-nginx-module.tar.gz \
     && chmod u+x ${HOME}/fastdfs-nginx-module-master/src/config \
     && cd ${HOME}/openssl-OpenSSL_$OPENSSL_VERSION \
-    && patch -p1 < ${HOME}/sslconfig/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102j.patch \
-    && cd ${HOME}/nginx-$NGINX_VERSION \
-    && ./configure $CONFIG --with-debug  \
-    && make -j$(getconf _NPROCESSORS_ONLN) \
+    && patch -p1 < ${HOME}/sslconfig/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102j.patch 
+RUN cp /usr/include/fastcommon/*.h /usr/include/fastdfs/
+RUN cd ${HOME}/nginx-$NGINX_VERSION \
+    && ./configure $CONFIG --with-debug  > con.log \
+    && make -j$(getconf _NPROCESSORS_ONLN) > make.log \
     && ls objs \
     && mv objs/nginx objs/nginx-debug \
     && mv objs/ngx_http_xslt_filter_module.so objs/ngx_http_xslt_filter_module-debug.so \
@@ -145,8 +146,8 @@ RUN   GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
     && mv objs/ngx_http_geoip_module.so objs/ngx_http_geoip_module-debug.so \
     && mv objs/ngx_stream_geoip_module.so objs/ngx_stream_geoip_module-debug.so \
     && ./configure $CONFIG \
-    && make -j$(getconf _NPROCESSORS_ONLN) \
-    && make install 
+    && make -j$(getconf _NPROCESSORS_ONLN)  > con.log \
+    && make install > make.log 
 RUN  cd ${HOME}/nginx-$NGINX_VERSION \
     && rm -rf ${NGINX_PREFIX}/html/ \
     && mkdir -p ${NGINX_PREFIX}/html/ \
@@ -169,7 +170,8 @@ RUN  cd ${HOME}/nginx-$NGINX_VERSION \
     && rm -rf ${HOME}/ngx_http_google_filter_module \
     && rm -rf ${HOME}/ngx_http_substitutions_filter_module \
     && rm -rf ${HOME}/fastdfs-nginx-module \
-    && rm -rf ${HOME}/nginx-$NGINX_VERSION
+    && rm -rf ${HOME}/nginx-$NGINX_VERSION \
+    && rm -rf *.log
 
 
 # 配置fastdfs: base_dir
