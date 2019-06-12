@@ -8,45 +8,39 @@ ENV ZLIB_VERSION 1.2.11
 ENV OPENSSL_VERSION 1_0_2o
 ENV NGINX_CT_VERSION 1.3.2
 ENV NGINX_VERSION 1.13.12
+# 默认fastdfs端口
+ENV FDFS_PORT 22122
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
-
-# 安装准备 --no-cache 
-RUN    apk update 
-RUN    apk add --virtual .build-deps bash gcc libc-dev make openssl-dev pcre perl zlib-dev linux-headers curl 
-# 下载fastdfs、libfastcommon、nginx插件的源码
-RUN     cd ${HOME} \
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && apk update &&  apk add --virtual .build-deps bash gcc libc-dev make openssl-dev pcre perl zlib-dev linux-headers curl && cd ${HOME} \
         && curl -fSL https://github.com/happyfish100/libfastcommon/archive/V1.0.36.tar.gz -o fastcommon.tar.gz \
         && curl -fSL  https://codeload.github.com/happyfish100/fastdfs/tar.gz/V5.11 -o fastfs.tar.gz \
         && curl -fSL  https://github.com/happyfish100/fastdfs-nginx-module/archive/master.tar.gz -o fastdfs-nginx-module.tar.gz \
         && tar zxf fastcommon.tar.gz \
         && tar zxf fastdfs-nginx-module.tar.gz \
-        && tar zxf fastfs.tar.gz
+        && tar zxf fastfs.tar.gz \
 
 # 安装libfastcommon
-RUN     cd ${HOME}/libfastcommon-1.0.36/ \
+        && cd ${HOME}/libfastcommon-1.0.36/ \
         && ./make.sh \
-        && ./make.sh install
+        && ./make.sh install \
 
 # 安装fastdfs v5.11
-RUN   GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \ 
+    &&  GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \ 
     &&  cd ${HOME}/fastdfs-5.11/ \
     && ./make.sh \
-    && ./make.sh install 
+    && ./make.sh install \
 
 # 配置fastdfs: base_dir
-RUN     cd /etc/fdfs/ \
+       &&   cd /etc/fdfs/ \
         && cp storage.conf.sample storage.conf \
         && cp tracker.conf.sample tracker.conf \
         && cp client.conf.sample client.conf \
         && sed -i "s|/home/fastdfs|/var/local/fdfs/tracker|g" /etc/fdfs/tracker.conf \
         && sed -i "s|/home/fastdfs|/var/local/fdfs/storage|g" /etc/fdfs/storage.conf \
-        && sed -i "s|/home/fastdfs|/var/local/fdfs/storage|g" /etc/fdfs/client.conf 
+        && sed -i "s|/home/fastdfs|/var/local/fdfs/storage|g" /etc/fdfs/client.conf  \
 
-# 默认fastdfs端口
-ENV FDFS_PORT 22122
 # 设置nginx和fastdfs联合环境，并配置nginx
-RUN     cp ${HOME}/fastdfs-nginx-module-master/src/mod_fastdfs.conf /etc/fdfs/ \
+        &&   cp ${HOME}/fastdfs-nginx-module-master/src/mod_fastdfs.conf /etc/fdfs/ \
         && sed -i "s|^store_path0.*$|store_path0=/var/local/fdfs/storage|g" /etc/fdfs/mod_fastdfs.conf \
         && sed -i "s|^url_have_group_name =.*$|url_have_group_name = true|g" /etc/fdfs/mod_fastdfs.conf \
         && cd ${HOME}/fastdfs-5.11/conf/ \

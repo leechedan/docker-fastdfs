@@ -9,11 +9,10 @@ ENV OPENSSL_VERSION 1_0_2o
 ENV NGINX_CT_VERSION 1.3.2
 ENV NGINX_VERSION 1.13.12
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
 # 安装准备 --no-cache 
-RUN    apk update 
-RUN    apk add --virtual .build-deps bash gcc libc-dev make openssl-dev pcre-dev zlib-dev linux-headers curl gnupg libxslt-dev gd-dev geoip-dev  freetype libpng libjpeg-turbo freetype-dev libpng-dev libjpeg-turbo-dev  libtool g++ autoconf automake libgd \
+RUN    apk update &&  apk add --virtual .build-deps bash gcc libc-dev make openssl-dev pcre-dev zlib-dev linux-headers curl gnupg libxslt-dev gd-dev geoip-dev  freetype libpng libjpeg-turbo freetype-dev libpng-dev libjpeg-turbo-dev  libtool g++ autoconf automake libgd \
         gnupg \
         libxslt-dev \
         gd-dev \
@@ -21,9 +20,9 @@ RUN    apk add --virtual .build-deps bash gcc libc-dev make openssl-dev pcre-dev
         git \
         patch \
         build-base \
-        perl-dev 
+        perl-dev \
 # 下载fastdfs、libfastcommon、nginx插件的源码
-RUN     cd ${HOME} \
+        && cd ${HOME} \
         && curl -fSL https://github.com/happyfish100/libfastcommon/archive/V1.0.36.tar.gz -o fastcommon.tar.gz \
         && curl -fSL  https://codeload.github.com/happyfish100/fastdfs/tar.gz/V5.11 -o fastfs.tar.gz \
         && curl -fSL  https://github.com/happyfish100/fastdfs-nginx-module/archive/master.tar.gz -o fastdfs-nginx-module.tar.gz \
