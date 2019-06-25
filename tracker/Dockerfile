@@ -1,17 +1,16 @@
-FROM alpine:3.6
+FROM alpine:3.9
 
 MAINTAINER leechedan <leechedan@gmail.com>
 
-ENV HOME /root
-ENV PCRE_VERSION 8.42
-ENV ZLIB_VERSION 1.2.11
-ENV OPENSSL_VERSION 1_0_2o
-ENV NGINX_CT_VERSION 1.3.2
-ENV NGINX_VERSION 1.13.12
-# 默认fastdfs端口
-ENV FDFS_PORT 22122
-
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && apk update &&  apk add --virtual .build-deps bash gcc libc-dev make openssl-dev pcre perl zlib-dev linux-headers curl && cd ${HOME} \
+ENV HOME=/home/clouder \
+ PCRE_VERSION=8.42 \
+ ZLIB_VERSION=1.2.11 \
+ OPENSSL_VERSION=1_0_2o \
+ NGINX_CT_VERSION=1.3.2 \
+ NGINX_VERSION=1.13.12 \
+ FDFS_PORT=22122
+WORKDIR ${HOME}
+RUN mkdir -p ${HOME} && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && apk update &&  apk add --virtual .build-deps bash gcc libc-dev make openssl-dev pcre perl zlib-dev linux-headers curl && cd ${HOME} \
         && curl -fSL https://github.com/happyfish100/libfastcommon/archive/V1.0.36.tar.gz -o fastcommon.tar.gz \
         && curl -fSL  https://codeload.github.com/happyfish100/fastdfs/tar.gz/V5.11 -o fastfs.tar.gz \
         && curl -fSL  https://github.com/happyfish100/fastdfs-nginx-module/archive/master.tar.gz -o fastdfs-nginx-module.tar.gz \
@@ -31,7 +30,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && ./make.sh install \
 
 # 配置fastdfs: base_dir
-       &&   cd /etc/fdfs/ \
+        && cd /etc/fdfs/ \
         && cp storage.conf.sample storage.conf \
         && cp tracker.conf.sample tracker.conf \
         && cp client.conf.sample client.conf \
@@ -40,13 +39,13 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
         && sed -i "s|/home/fastdfs|/var/local/fdfs/storage|g" /etc/fdfs/client.conf  \
 
 # 设置nginx和fastdfs联合环境，并配置nginx
-        &&   cp ${HOME}/fastdfs-nginx-module-master/src/mod_fastdfs.conf /etc/fdfs/ \
+        && cp ${HOME}/fastdfs-nginx-module-master/src/mod_fastdfs.conf /etc/fdfs/ \
         && sed -i "s|^store_path0.*$|store_path0=/var/local/fdfs/storage|g" /etc/fdfs/mod_fastdfs.conf \
         && sed -i "s|^url_have_group_name =.*$|url_have_group_name = true|g" /etc/fdfs/mod_fastdfs.conf \
         && cd ${HOME}/fastdfs-5.11/conf/ \
         && cp http.conf mime.types anti-steal.jpg /etc/fdfs/ 
 # 清理文件
-RUN rm -rf ${HOME}/* 
+#RUN ls -al ${HOME}/* && chown -R root:root ${HOME} && rm -r ${HOME}
 
 # 配置启动脚本，在启动时中根据环境变量替换nginx端口、fastdfs端口
 # 默认nginx端口
