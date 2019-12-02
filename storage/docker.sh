@@ -4,7 +4,7 @@ set -e
 # first arg is `-f` or `--some-option`
 # or there are no args
 if [ "$#" -eq 0 ] || [ "${1#-}" != "$1" ]; then
-	set -- nginx -g 'daemon off; error_log /var/log/error.log debug;'  "$@"
+  set -- nginx -g 'daemon off; error_log /var/log/error.log debug;'  "$@"
 fi
 
 
@@ -20,18 +20,17 @@ _ip_address() {
 	'
 }
 
+sed -i 's/listen .*$/listen '"$WEB_PORT"';/g' ${NGINX_CONFIG_FILE}; 
 sed -i 's/http.server_port=.*$/http.server_port='"$WEB_PORT"'/g' /etc/fdfs/storage.conf;
-if [ ! "$IP" ]; then 
+if [ "$IP" ]; then 
     IP=$(_ip_address)
 fi 
-
-mkdir -p /home/yuqing/fastdfs/
-sed -i 's/^tracker_server=.*$/tracker_server='"$IP"':'"$FDFS_PORT"'/g' /etc/fdfs/client.conf; 
-sed -i 's/^tracker_server=.*$/tracker_server='"$IP"':'"$FDFS_PORT"'/g' /etc/fdfs/storage.conf; 
-sed -i 's/^store_path0=.*$/store_path0=\/home\/yuqing\/fastdfs/g' /etc/fdfs/storage.conf; 
-sed -i 's/^base_path=.*$/base_path=\/home\/yuqing\/fastdfs/g' /etc/fdfs/storage.conf; 
-sed -i 's/^tracker_server=.*$/tracker_server='"$IP"':'"$FDFS_PORT"'/g' /etc/fdfs/mod_fastdfs.conf;
-
+if [ ! -f "${NGINX_CONFIG_FILE}" ]; then 
+    cp -fr ${NGINX_PREFIX}/conf-bak/* ${NGINX_PREFIX}/conf; 
+fi 
+sed -i 's/^tracker_server=.*$/tracker_server='"$TRACKERD_IP"':'"$TRACKERD_PORT"'/g' /etc/fdfs/client.conf; 
+sed -i 's/^tracker_server=.*$/tracker_server='"$TRACKERD_IP"':'"$TRACKERD_PORT"'/g' /etc/fdfs/storage.conf; 
+sed -i 's/^tracker_server=.*$/tracker_server='"$TRACKERD_IP"':'"$TRACKERD_PORT"'/g' /etc/fdfs/mod_fastdfs.conf;
 /usr/bin/fdfs_storaged /etc/fdfs/storage.conf start 
-sleep 5
+
 exec "$@"

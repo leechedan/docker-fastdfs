@@ -20,20 +20,14 @@ _ip_address() {
 	'
 }
 
-echo "define ip"
 sed -i 's/http.server_port=.*$/http.server_port='"$WEB_PORT"'/g' /etc/fdfs/storage.conf;
 if [ ! "$IP" ]; then 
     IP=$(_ip_address)
 fi 
 mkdir -p /home/yuqing/fastdfs
-#sed -i 's/^tracker_server=.*$/tracker_server='"$IP"':'"$FDFS_PORT"'/g' /etc/fdfs/client.conf; 
-#sed -i 's/^tracker_server=.*$/tracker_server='"$IP"':'"$FDFS_PORT"'/g' /etc/fdfs/storage.conf; 
-#sed -i 's/^base_path=.*$/base_path=\/var\/local\/fdfs\/storage/g' /etc/fdfs/storage.conf; 
-sed -i 's/^store_path0=.*$/store_path0=\/home\/yuqing\/fastdfs/g' /etc/fdfs/mod_fastdfs.conf; 
-#sed -i 's/^tracker_server=.*$/tracker_server='"$IP"':'"$FDFS_PORT"'/g' /etc/fdfs/mod_fastdfs.conf;
 
 cp -r /etc/fdfs /root/fdfs/
 /usr/bin/fdfs_trackerd /etc/fdfs/tracker.conf start 
 
-echo "efter start trackerd"
+
 exec "$@"

@@ -1,38 +1,40 @@
 version: '3'
 services:
     fdfs-trackerd:
-        build: ./tracker
-        image: fdfs-trackerd
-        # 该容器是否需要开机启动+自动重启。若需要，则取消注释。
-        #restart: always
+        image: fdfs/trackerd:0.4
         container_name: fdfs-trackerd
         ports:
             - 22122:22122
+            - 23000:23000
         environment:
-            # docker所在主机的IP地址
-            - IP=192.168.1.1
+            - IP=172.31.240.104
+            - WEB_PORT=8088
+            - FDFS_PORT=22122
         volumes:
-            # 将本地目录映射到docker容器内的fastdfs数据存储目录，将fastdfs文件存储到主机上，以免每次重建docker容器，之前存储的文件就丢失了。
             - /etc/locale.conf:/etc/locale.conf
             - ./data/tracker:/var/local/fdfs/tracker
-        # 使docker具有root权限以读写主机上的目录
         privileged: true
+        networks: 
+          - app
     fdfs-storage:
-        build: ./storage
-        image: fdfs-storage
-        # 该容器是否需要开机启动+自动重启。若需要，则取消注释。
-        #restart: always
+        image: fdfs/storage:0.4
         ports:
-            - 8088:8088
+            - 8089:8088
         environment:
-            - NGINX_CONF_FILE=/etc/nginx/conf/nginx.conf
-            # docker所在主机的IP地址
-            - IP=192.168.1.1
+            - NGINX_CONF_FILE=/usr/local/nginx/conf/nginx.conf
+            - TRACKERD_IP=fdfs-trackerd
+            - WEB_PORT=8088
+            - TRACKERD_PORT=22122
         volumes:
-            # 将本地目录映射到docker容器内的fastdfs数据存储目录，将fastdfs文件存储到主机上，以免每次重建docker容器，之前存储的文件就丢失了。
-            - ./data/storage:/var/local/fdfs/storage
-            - ./data/nginx/conf:/usr/local/nginx/conf/
+            #- ./data/storage:/var/local/fdfs/storage
+            - /home/docker/fdfs/data/storage:/home/yuqing/fastdfs
+            - /home/docker/fdfs/data/nginx/conf:/usr/local/nginx/conf/
+            #- ./data/nginx/conf:/usr/local/nginx/conf/
             - /etc/locale.conf:/etc/locale.conf
-            - ./data/nginx/logs/:/usr/local/nginx/logs/
-        # 使docker具有root权限以读写主机上的目录
         privileged: true
+        networks: 
+          - app
+
+networks:
+  app:
+    external: true
