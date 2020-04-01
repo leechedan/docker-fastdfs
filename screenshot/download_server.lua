@@ -106,9 +106,10 @@ if media == '1' then
 	end
 elseif media == '2' then 
 	local cmd = "ffmpeg -v 0 -ss 1 -i " .. orgfilepath .. " -vframes 1 -f image2 -y " .. filepath
-	--ngx.log(ngx.ERR,"command : ",cmd)
 	local ret = os.execute(cmd)
-	--if ret ~= 0 then
+        local cmd1 = "ffprobe -i " .. orgfilepath .. " -v quiet -print_format json  -show_streams -select_streams 1 >" .. cache_path .. ngx.var.prefix .. "-me.json"	
+	os.execute(cmd1)
+        --if ret ~= 0 then
 	--	ngx.log(ngx.ERR,"os execute error : ", cmd)
 	--	ngx.exit(500)
 	--end

@@ -1,8 +1,8 @@
 version: '3'
 services:
     fdfs-trackerd:
-        image: fdfs/trackerd:0.4
-        container_name: fdfs-trackerd
+        image: fdfs/tracker:0.4
+        container_name: fdfs-tracker
         ports:
             - 22122:22122
             - 23000:23000
@@ -26,15 +26,23 @@ services:
             - WEB_PORT=8088
             - TRACKERD_PORT=22122
         volumes:
-            #- ./data/storage:/var/local/fdfs/storage
             - /home/docker/fdfs/data/storage:/home/yuqing/fastdfs
             - /home/docker/fdfs/data/nginx/conf:/usr/local/nginx/conf/
-            #- ./data/nginx/conf:/usr/local/nginx/conf/
             - /etc/locale.conf:/etc/locale.conf
         privileged: true
         networks: 
           - app
-
+    fdfs-video:
+        image: fdfs/video:0.4
+        ports:
+            - 8089:7777
+        environment:
+          - FASTDFS_TRACKER_PORT=22122
+          - PROXY=dfs-storage:8088
+          - FASTDFS_TRACKER_IP=172.31.240.104
+        privileged: true
+        networks: 
+          - app
 networks:
   app:
     external: true

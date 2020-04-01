@@ -7,167 +7,194 @@ worker_cpu_affinity 0001 0010 0100 1000;
 #error_log  logs/error.log;
 #error_log  logs/error.log  notice;
 #error_log  logs/error.log  info;
-#pid        logs/nginx.pid;
+#pid    logs/nginx.pid;
 
 events {
-    use epoll;
-    worker_connections  1024;
-    multi_accept on;
+  use epoll;
+  worker_connections  1024;
+  multi_accept on;
 }
 
 http {
-    include       mime.types;
-    default_type  application/octet-stream;
+  include     mime.types;
+  default_type  application/octet-stream;
 
-    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-    #                  '$status $body_bytes_sent "$http_referer" '
-    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+  #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+  #          '$status $body_bytes_sent "$http_referer" '
+  #          '"$http_user_agent" "$http_x_forwarded_for"';
 
-    #access_log  logs/access.log  main;
+  #access_log  logs/access.log  main;
 
-    sendfile        on;
-    #tcp_nopush     on;
+  sendfile    on;
+  #tcp_nopush   on;
 
-    #keepalive_timeout  0;
-    keepalive_timeout  65;
+  #keepalive_timeout  0;
+  keepalive_timeout  65;
 
-    client_max_body_size 50m;
-    #gzip  on;
+  client_max_body_size 50m;
+  #gzip  on;
 
-    lua_package_path "/usr/local/openresty/lualib/?.lua;;";	
-    lua_package_cpath "/usr/local/openresty/lualib/?.so;;";
+  lua_package_path "/usr/local/openresty/lualib/?.lua;;";	
+  lua_package_cpath "/usr/local/openresty/lualib/?.so;;";
 
-    #lua_socket_pool_size 30;
-    #lua_socket_keepalive_timeout 60s;
-    #init_by_lua_file /usr/local/openresty/site/init.lua;
-    #init_worker_by_lua_file /usr/local/openresty/site/init_worker.lua;
-    #resolver 114.114.114.114;
-    resolver 127.0.0.1;
+  #lua_socket_pool_size 30;
+  #lua_socket_keepalive_timeout 60s;
+  #init_by_lua_file /usr/local/openresty/site/init.lua;
+  #init_worker_by_lua_file /usr/local/openresty/site/init_worker.lua;
+  #resolver 114.114.114.114;
+  resolver 127.0.0.1;
 
-    server {
-        listen       7777;
-        server_name  localhost;
-        #charset koi8-r;
-        #access_log  logs/host.access.log  main;
+  server {
+    listen     7777;
+    server_name  localhost;
+    #charset koi8-r;
+    #access_log  logs/host.access.log  main;
 
-       location ~ /grou([0-9])/(.*) {
+    #location ~ /group([0-9])/(.*) {
+    location ~* group1/M00/(.+)/(.+)/(.+)\.(jpg|png|jpeg|gif|GIF|PNG|JPEG|JPG)$ {
 
-              resolver 127.0.0.1;
-              root /srv/image_cache;
+        resolver 127.0.0.1;
+        root /srv/cache;
 
-              set $media 1;
-              set $fastdfs_tracker_ip ${FASTDFS_TRACKER_IP};
-              set $fastdfs_tracker_port ${FASTDFS_TRACKER_PORT};
+        set $media 1;
+        set $fastdfs_tracker_ip ${FASTDFS_TRACKER_IP};
+        set $fastdfs_tracker_port ${FASTDFS_TRACKER_PORT};
 
-              set $cache_path "/srv/image_cache/";
+        set $cache_path "/srv/cache/";
 
-              #lua_code_cache off;
+        #lua_code_cache off;
 
 
-              if ($uri ~ "(.*)/(.*)") {
-                  set $uri_prefix   "$1";
-                  set $filename     "$2";
-                  set $local_path   "$cache_path$filename";
-              }
+        if ($uri ~ "(.*)/(.*)") {
+          set $uri_prefix   "$1";
+          set $filename   "$2";
+          set $local_path   "$cache_path$filename";
+        }
 
-              if ($filename ~ "(.*)@(.*)\.(.*)"){
-                  set $image_size    "$2";
-                  set $original_file "$1.$3";
-                  set $group_id      "$uri_prefix/$original_file";
-              }
+        if ($filename ~ "(.*)@(.*)\.(.*)"){
+          set $image_size  "$2";
+          set $original_file "$1.$3";
+          set $group_id    "$uri_prefix/$original_file";
+        }
 
-              if ($original_file = ""){
-                  set $original_file $filename;
-              }
+        if ($original_file = ""){
+          set $original_file $filename;
+        }
 
-              if ($group_id = ""){
-                  set $group_id $uri;
-              }
+        if ($group_id = ""){
+          set $group_id $uri;
+        }
 
-              if (!-f $local_path){
-                  content_by_lua_file  /usr/local/openresty/site/download_server.lua;
-              }
+        if (!-f $local_path){
+          content_by_lua_file  /usr/local/openresty/site/download_server.lua;
+        }
 
-              rewrite (.*)/(.*) "/$2" break;
+        rewrite (.*)/(.*) "/$2" break;
 
-       }
+     }
 
  
-       location ~ /group([0-9])/(.*) {
+    #location ~ /group([0-9])/(.*) {
+	#location ~* group1/M00/(.+)/(.+)/(.+)_(?!_)(\d*)x(\d*)\.(mkv|rmvb|mp4|avi|flv|wmv|MP4|MKV|AVI|RMVB|WMV)$ {
+    location ~* group1/M00/(.+)/(.+)/(.+)\.(mkv|rmvb|mp4|avi|flv|wmv|MP4|MKV|AVI|RMVB|WMV)$ {
 
-              root /srv/video_cache;
+        root /srv/cache;
 
-              set $media 2;
-              set $fastdfs_tracker_ip ${FASTDFS_TRACKER_IP};
-              set $fastdfs_tracker_port ${FASTDFS_TRACKER_PORT};
+        set $media 2;
+        set $fastdfs_tracker_ip ${FASTDFS_TRACKER_IP};
+        set $fastdfs_tracker_port ${FASTDFS_TRACKER_PORT};
 
-              set $cache_path "/srv/video_cache/";
+        set $cache_path "/srv/cache/";
 
-              #lua_code_cache off;
+        #lua_code_cache off;
 
-              if ($uri ~ "(.*)/(.*)\.(.*)"){
-                  set $uri_prefix "$1";
-                  set $prefix     "$2";
-                  set $postfix    "$3";
-                  set $local_path "$cache_path$prefix.$postfix";
-              }
-               
-	          set $filename      "$prefix.$postfix.jpg";
-	          set $original_file "$prefix.$postfix";
+        if ($uri ~ "(.*)/(.*)\.(.*)"){
+          set $uri_prefix "$1";
+          set $prefix   "$2";
+          set $postfix  "$3";
+          set $local_path "$cache_path$prefix.$postfix";
+        }
+         
+	      set $filename    "$prefix.$postfix.jpg";
+	      set $original_file "$prefix.$postfix";
 
-              if ($postfix = "jpg"){
-	             set $filename      "$prefix.$postfix";
-                 set $original_file "$prefix.$postfix";
-              }
-              if ($postfix = "amr"){
-                 set $media 3;
-              }
-
-              set $group_id "$uri_prefix/$original_file";
-
-              if (!-f $local_path){
-                  content_by_lua_file  /usr/local/openresty/site/download_server.lua;
-              }
-
-              rewrite (.*)/(.*) "/$2" break;
-       }
-
-
-        location ~ share/upload {
-              #lua_code_cache off;
-              set $fastdfs_image_tracker_ip ${FASTDFS_TRACKER_IP};
-              set $fastdfs_image_tracker_port ${FASTDFS_TRACKER_PORT};
-              set $fastdfs_video_tracker_ip ${FASTDFS_TRACKER_IP};
-              set $fastdfs_video_tracker_port ${FASTDFS_TRACKER_PORT};
-              content_by_lua_file /usr/local/openresty/site/upload_server.lua;
+        if ($postfix = "jpg"){
+	       set $filename    "$prefix.$postfix";
+         set $original_file "$prefix.$postfix";
+        }
+        if ($postfix = "amr"){
+         set $media 3;
         }
 
+        set $group_id "$uri_prefix/$original_file";
 
-        #location ~ share/download/(.*){
-        #      #lua_code_cache off;
-        #      set_by_lua_file $groupid /usr/local/openresty/site/get_fastdfs_group_id.lua;
-        #      if ($groupid)
-        #      {
-        #           rewrite_by_lua_file /usr/local/openresty/site/file_rewrite.lua;
-        #      }
-		#      echo "rewrite fail..........";  
-        #}
-
-        location / {
-            root   html;
-            index  index.html index.htm;
+        if (!-f $local_path){
+          content_by_lua_file  /usr/local/openresty/site/download_server.lua;
         }
 
-        #error_page  404              /404.html;
-
-        # redirect server error pages to the static page /50x.html
-        #
-        error_page   500 502 503 504  /50x.html;
-        location = /50x.html {
-            root   html;
-        }
-
+        rewrite (.*)/(.*) "/$2" break;
     }
+    location ~ /group([0-9])/(.*) {
+	
+        root /srv/cache;
+
+        set $cache_path "/srv/cache/";
+        if ($uri ~ "(.*)/(.*)\.(.*)"){
+          set $uri_prefix "$1";
+          set $prefix   "$2";
+          set $postfix  "$3";
+          set $local_path "$cache_path$prefix.$postfix";
+        }
+         
+	    set $filename    "$prefix.$postfix.jpg";
+	    set $original_file "$prefix.$postfix";
+
+        if ($postfix = "jpg"){
+	      set $filename    "$prefix.$postfix";
+          set $original_file "$prefix.$postfix";
+        }
+
+        if (!-f $local_path){
+          proxy_pass http://fdfs-storage:8088;
+        }
+      
+    }
+
+    location ~ share/upload {
+        #lua_code_cache off;
+        set $fastdfs_image_tracker_ip ${FASTDFS_TRACKER_IP};
+        set $fastdfs_image_tracker_port ${FASTDFS_TRACKER_PORT};
+        set $fastdfs_video_tracker_ip ${FASTDFS_TRACKER_IP};
+        set $fastdfs_video_tracker_port ${FASTDFS_TRACKER_PORT};
+        content_by_lua_file /usr/local/openresty/site/upload_server.lua;
+    }
+
+
+    #location ~ share/download/(.*){
+    #    #lua_code_cache off;
+    #    set_by_lua_file $groupid /usr/local/openresty/site/get_fastdfs_group_id.lua;
+    #    if ($groupid)
+    #    {
+    #       rewrite_by_lua_file /usr/local/openresty/site/file_rewrite.lua;
+    #    }
+		#    echo "rewrite fail..........";  
+    #}
+
+    location / {
+      root   html;
+      index  index.html index.htm;
+    }
+
+    #error_page  404        /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+      root   html;
+    }
+
+  }
 
 
 
