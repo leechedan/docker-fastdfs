@@ -1,5 +1,4 @@
 FROM openresty/openresty:1.13.6.2-2-centos
-
 ADD luajit-ffi /tmp/luajit-ffi
 COPY *.lua /usr/local/openresty/site/
 
@@ -11,7 +10,7 @@ RUN cd /tmp/ && curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.
 	&& curl -fSL ftp://ftp.graphicsmagick.org/pub/GraphicsMagick/1.3/GraphicsMagick-1.3.31.tar.gz -o GraphicsMagick.tar.gz \
 	&& tar zxf GraphicsMagick.tar.gz \
 	&& yum makecache \
-    && yum install -y gcc \
+    && yum install -y gcc dnsmasq \
                    gcc-c++ \
                    zlib \
                    zlib-devel \
@@ -44,11 +43,9 @@ RUN cd /tmp/ && curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.
     ldconfig && \
     cd /tmp/luajit-ffi && \
     chmod +x build.sh && \
-    #./build.sh && \
-    mv /tmp/luajit-ffi/libavmeta.so /usr/local/lib/ && \
+    ./build.sh && \
+    #mv /tmp/luajit-ffi/libavmeta.so /usr/local/lib/ && \
     ldconfig /usr/local/lib && \
-    mkdir -p /srv/image_cache && \
-    mkdir -p /srv/video_cache && \
     cd /tmp/magick-master && \
     luarocks install magick && \
     cd /tmp && cp luajit-ffi/libavmeta.lua /usr/local/openresty/lualib/ && \
@@ -58,7 +55,13 @@ RUN cd /tmp/ && curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.
     yum clean all && \
     rm -rf /tmp/* 
     #yum -y remove $(rpm -qa "*-devel")
-
+ENV PORT=80 \
+    STORAGE_PROXY=storage \
+    FASTDFS_TRACKER_IP=tracker \
+    FASTDFS_TRACKER_PORT=22122 \
+    CACHE_DIR=/tmp/cache/ \
+    LUA_RESOLVER=127.0.0.1 \
+    DELETE_DATA_INIT_FLAG=true
 COPY nginx.conf.template /usr/local/openresty/nginx/conf/nginx.conf.template
 COPY docker-entrypoint.sh /
 
