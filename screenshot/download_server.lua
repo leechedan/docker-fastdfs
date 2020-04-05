@@ -60,14 +60,14 @@ local media = ngx.var.media;
 local image_size = ngx.var.image_size
 local postfix = ngx.var.postfix
 
-#ngx.log(ngx.ERR,"uri:",ngx.var.uri)
-#ngx.log(ngx.ERR,"postfix:",postfix)
-#ngx.log(ngx.ERR,"filename:",filename)
-#ngx.log(ngx.ERR,"filepath:",filepath)
-#ngx.log(ngx.ERR,"imagesize:",image_size)
-#ngx.log(ngx.ERR,"groupid:",groupid)
-#ngx.log(ngx.ERR,"originalfile:",orgfilename)
-#ngx.log(ngx.ERR,"originalfilepath:",orgfilepath)
+ngx.log(ngx.ERR,"uri:",ngx.var.uri)
+ngx.log(ngx.ERR,"postfix:",postfix)
+ngx.log(ngx.ERR,"filename:",filename)
+ngx.log(ngx.ERR,"filepath:",filepath)
+ngx.log(ngx.ERR,"imagesize:",image_size)
+ngx.log(ngx.ERR,"groupid:",groupid)
+ngx.log(ngx.ERR,"originalfile:",orgfilename)
+ngx.log(ngx.ERR,"originalfilepath:",orgfilepath)
 
 
 local buffer = nil

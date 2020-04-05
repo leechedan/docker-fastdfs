@@ -1,6 +1,5 @@
 FROM openresty/openresty:1.13.6.2-2-centos
 ADD luajit-ffi /tmp/luajit-ffi
-COPY *.lua /usr/local/openresty/site/
 
 RUN cd /tmp/ && curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo \
     && curl -o /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo \
@@ -64,6 +63,7 @@ ENV PORT=80 \
     DELETE_DATA_INIT_FLAG=true
 COPY nginx.conf.template /usr/local/openresty/nginx/conf/nginx.conf.template
 COPY docker-entrypoint.sh /
+COPY *.lua /usr/local/openresty/site/
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
