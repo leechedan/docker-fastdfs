@@ -13,7 +13,7 @@ ENV HOME=/root \
 
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
     apk add --update --virtual .build-deps gcc libc-dev make openssl-dev pcre perl zlib-dev linux-headers curl \
-    && apk add bash\
+    && apk add bash tzdata \
     && cd ${HOME} \
 	&& curl -fSL https://github.com/happyfish100/libfastcommon/archive/V1.0.36.tar.gz -o fastcommon.tar.gz \
 	&& curl -fSL  https://codeload.github.com/happyfish100/fastdfs/tar.gz/V5.11 -o fastfs.tar.gz \
