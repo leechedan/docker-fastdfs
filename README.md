@@ -42,7 +42,7 @@
 * 原图访问地址：```http://img.xxx.com/xx/001/001.jpg```
 * 缩略图访问地址：```http://img.xxx.com/xx/001/001@100x100.jpg``` 即为宽100,高100
  - 裁剪方式： ```gm convert input.jpg -thumbnail "100x100^" -gravity center -extent 100x100 output.jpg```
- - 缩小后以中心点开始进行宽高裁剪
+ - 缩小后以中心点开始进行宽高裁剪,如果超过实际宽高，会进行放大
  - 图片meta: ```{"size":300139,"md5":"fa17a3859d6b21fcf040121a712cd459","ext":"jpg",width":100,"height":100}```
 
 #### 图片链接地址对应关系

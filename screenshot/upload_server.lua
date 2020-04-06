@@ -169,7 +169,7 @@ while true do
   end
 
 end
-gx.header["Content-Type"] = 'application/json'
+ngx.header["Content-Type"] = 'application/json'
 ngx.header["server"] = 'nginx'
 ngx.print(cjson.encode(result))
 
