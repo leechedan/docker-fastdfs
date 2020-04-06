@@ -89,7 +89,7 @@ end
 
 if media == '1' then
 	if image_size ~= '' then
-		local cmd = "gm convert " .. orgfilepath .. " -thumbnail " .. image_size .. " " .. filepath
+		local cmd = "gm convert " .. orgfilepath .. " -thumbnail " .. image_size .. "^ -gravity center -extent " .. image_size .. " " .. filepath
 		local ret = os.execute(cmd)
 		local rfd = io.open(filepath,"r")
 		if not rfd then

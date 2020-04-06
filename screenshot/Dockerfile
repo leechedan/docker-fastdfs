@@ -43,7 +43,7 @@ RUN cd /tmp/ && curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.
     cd /tmp/luajit-ffi && \
     chmod +x build.sh && \
     ./build.sh && \
-    #mv /tmp/luajit-ffi/libavmeta.so /usr/local/lib/ && \
+    mv /tmp/luajit-ffi/libavmeta.so /usr/local/lib/ && \
     ldconfig /usr/local/lib && \
     cd /tmp/magick-master && \
     luarocks install magick && \
